@@ -18,6 +18,7 @@ private extension UIView {
         
         translatesAutoresizingMaskIntoConstraints = false
         
+         if #available(iOS 9.0, *) {
         leadingAnchor.constraint(equalTo: superview!.leadingAnchor,
                                  constant: leadingOffset).isActive = true
         trailingAnchor.constraint(equalTo: superview!.trailingAnchor,
@@ -27,6 +28,7 @@ private extension UIView {
                              constant: topOffset).isActive = true
         bottomAnchor.constraint(equalTo: superview!.bottomAnchor,
                                 constant: topOffset).isActive = true
+        }
         
     }
 }
