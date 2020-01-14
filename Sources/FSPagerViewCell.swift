@@ -8,8 +8,59 @@
 
 import UIKit
 
+private extension UIView {
+
+    func addConstaintsToSuperview(leadingOffset: CGFloat, topOffset: CGFloat) {
+        /// constraints will be added respective to the superview, so if it is nil, we can not add constraints via this method.
+        guard superview != nil else {
+            return
+        }
+        
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        leadingAnchor.constraint(equalTo: superview!.leadingAnchor,
+                                 constant: leadingOffset).isActive = true
+        trailingAnchor.constraint(equalTo: superview!.trailingAnchor,
+                                  constant: leadingOffset).isActive = true
+        
+        topAnchor.constraint(equalTo: superview!.topAnchor,
+                             constant: topOffset).isActive = true
+        bottomAnchor.constraint(equalTo: superview!.bottomAnchor,
+                                constant: topOffset).isActive = true
+        
+    }
+}
+
+
 open class FSPagerViewCell: UICollectionViewCell {
     
+    func clearForReuse() {
+        self.contentView.subviews.forEach { subView in
+            subView.removeFromSuperview()
+        }
+        _selectedForegroundView = nil
+        _customView = nil
+        _imageView = nil
+        _textLabel = nil
+    }
+    
+    /// Returns the label used for the main textual content of the pager view cell.
+    @objc
+    open var customView: UIView? {
+        if let _ = _customView {
+            return _customView
+        }
+        let customView = UIView(frame: .zero)
+        self.contentView.addSubview(customView)
+                
+        _customView = customView
+        return customView
+    }
+    
+    func addSubViewToCustomView(_ viewToAdd: UIView) {
+        customView?.addSubview(viewToAdd)
+        viewToAdd.addConstaintsToSuperview(leadingOffset: 0, topOffset: 0)
+    }
     /// Returns the label used for the main textual content of the pager view cell.
     @objc
     open var textLabel: UILabel? {
@@ -45,6 +96,7 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     fileprivate weak var _textLabel: UILabel?
+    fileprivate weak var _customView: UIView?
     fileprivate weak var _imageView: UIImageView?
     
     fileprivate let kvoContext = UnsafeMutableRawPointer(bitPattern: 0)
@@ -55,13 +107,19 @@ open class FSPagerViewCell: UICollectionViewCell {
         guard _selectedForegroundView == nil else {
             return _selectedForegroundView
         }
-        guard let imageView = _imageView else {
-            return nil
+        if let imageView = _imageView {
+            let view = UIView(frame: imageView.bounds)
+            imageView.addSubview(view)
+            _selectedForegroundView = view
+            return view
         }
-        let view = UIView(frame: imageView.bounds)
-        imageView.addSubview(view)
-        _selectedForegroundView = view
-        return view
+        if let customView = _customView {
+            let view = UIView(frame: customView.bounds)
+            customView.addSubview(view)
+            _selectedForegroundView = view
+            return view
+        }
+        return nil
     }
     
     open override var isHighlighted: Bool {
@@ -115,6 +173,10 @@ open class FSPagerViewCell: UICollectionViewCell {
     
     override open func layoutSubviews() {
         super.layoutSubviews()
+        if let customView = _customView {
+            customView.frame = self.contentView.bounds
+        }
+
         if let imageView = _imageView {
             imageView.frame = self.contentView.bounds
         }
