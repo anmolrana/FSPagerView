@@ -59,7 +59,7 @@ open class FSPagerViewCell: UICollectionViewCell {
         return customView
     }
     
-    func addSubViewToCustomView(_ viewToAdd: UIView) {
+    open func addSubViewToCustomView(_ viewToAdd: UIView) {
         customView?.addSubview(viewToAdd)
         viewToAdd.addConstaintsToSuperview(leadingOffset: 0, topOffset: 0)
     }
